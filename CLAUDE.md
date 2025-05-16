@@ -66,3 +66,9 @@ Once implemented, the following commands will be commonly used:
   1. Use explicit type imports from specific files rather than index files when possible
   2. Separate value imports from type imports (e.g., `import { Value } from './file'` and `import type { Type } from './file'`)
   3. Pay special attention to barrel files (index.ts) that re-export types to ensure they're properly structured
+
+  ## Workflow
+
+- Always run typecheck and fix all TypeScript errors before committing code.
+- Always run the linter to check for linting errors before committing code.
+- Make sure unit tests pass before committing code.

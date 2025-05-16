@@ -66,7 +66,7 @@ export class DatabaseInitService {
         )`,
 
         // Insert default settings
-        `INSERT OR IGNORE INTO settings (id, reminder_days_before) VALUES ('default', 7)`
+        `INSERT OR IGNORE INTO settings (id, reminder_days_before) VALUES ('default', 7)`,
       ];
 
       // Execute each statement

@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, Client, ResultSet } from '@libsql/client';
+import { createClient, Client, ResultSet, Config } from '@libsql/client';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit {
@@ -16,8 +16,8 @@ export class DatabaseService implements OnModuleInit {
     }
 
     // Configuration object for the client
-    const config: any = { url };
-    
+    const config: Config = { url };
+
     // Only add authToken for remote Turso databases, not for local SQLite files
     if (authToken && !url.startsWith('file:')) {
       config.authToken = authToken;
