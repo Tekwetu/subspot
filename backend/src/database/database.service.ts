@@ -15,10 +15,16 @@ export class DatabaseService implements OnModuleInit {
       throw new Error('TURSO_DATABASE_URL environment variable is not set');
     }
 
-    this.client = createClient({
-      url,
-      authToken,
-    });
+    // Configuration object for the client
+    const config: any = { url };
+    
+    // Only add authToken for remote Turso databases, not for local SQLite files
+    if (authToken && !url.startsWith('file:')) {
+      config.authToken = authToken;
+    }
+
+    this.client = createClient(config);
+    this.logger.log(`Initializing database with URL: ${url}`);
   }
 
   async onModuleInit() {

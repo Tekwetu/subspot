@@ -6,7 +6,7 @@ export async function seedDatabase(databaseService: DatabaseService) {
 
   // Check if we have existing data
   const result = await databaseService.execute('SELECT COUNT(*) as count FROM subscriptions');
-  if (result.rows[0].count > 0) {
+  if (result.rows && result.rows.length > 0 && Number(result.rows[0].count) > 0) {
     console.log('Database already has subscription data, skipping seed');
     return;
   }
