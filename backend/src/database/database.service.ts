@@ -55,11 +55,9 @@ export class DatabaseService implements OnModuleInit {
    * @param queries Array of SQL queries with their parameters
    * @returns Array of results for each query
    */
-  async executeTransaction(
-    queries: { sql: string; params?: any[] }[]
-  ): Promise<ResultSet[]> {
+  async executeTransaction(queries: { sql: string; params?: any[] }[]): Promise<ResultSet[]> {
     return this.client.batch(
-      queries.map((query) => ({
+      queries.map(query => ({
         sql: query.sql,
         args: query.params || [],
       }))

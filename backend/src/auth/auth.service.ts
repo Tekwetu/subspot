@@ -13,7 +13,7 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private jwtService: JwtService,
-    private databaseService: DatabaseService,
+    private databaseService: DatabaseService
   ) {}
 
   async onModuleInit() {
@@ -28,10 +28,9 @@ export class AuthService {
 
     try {
       // Check if admin user exists
-      const result = await this.databaseService.execute(
-        'SELECT id FROM users WHERE email = ?',
-        [email]
-      );
+      const result = await this.databaseService.execute('SELECT id FROM users WHERE email = ?', [
+        email,
+      ]);
 
       if (result.rows.length === 0) {
         // Create admin user
@@ -49,7 +48,10 @@ export class AuthService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(
+    email: string,
+    password: string
+  ): Promise<{ id: string; email: string } | null> {
     try {
       const result = await this.databaseService.execute(
         'SELECT id, email, password FROM users WHERE email = ?',
@@ -61,7 +63,21 @@ export class AuthService {
       }
 
       const user = result.rows[0];
-      const isPasswordValid = await bcrypt.compare(password, user.password as string);
+
+      // Validate user structure
+      if (
+        !user.id ||
+        !user.email ||
+        !user.password ||
+        typeof user.id !== 'string' ||
+        typeof user.email !== 'string' ||
+        typeof user.password !== 'string'
+      ) {
+        this.logger.error('Invalid user data structure');
+        return null;
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {
         return null;
@@ -81,13 +97,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload: JwtPayload = { sub: user.id as string, email: user.email as string };
-    
+    const payload: JwtPayload = { sub: user.id, email: user.email };
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        id: user.id as string,
-        email: user.email as string,
+        id: user.id,
+        email: user.email,
       },
     };
   }

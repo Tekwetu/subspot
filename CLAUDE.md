@@ -6,6 +6,7 @@ See:
 - @docs/prd.md for the PRD
 - @docs/implementation_plan.md for the implementation plan
 - @frontend/package.json for available npm commands for the frontend
+- @backend/package.json for available npm commands for the frontend
 
 ## Project Overview
 

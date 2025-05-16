@@ -44,7 +44,8 @@
 - [x] Create database module with Turso connection
 - [x] Design database schema matching TinyBase model
 - [x] Set up simple authentication for single user
-- [ ] Create API endpoints matching TinyBase operations
+- [x] Create API endpoints for subscriptions CRUD operations
+- [x] Add database initialization and seeding functionality
 - [ ] Implement synchronization endpoints
 - [ ] Add server-side validation
 
@@ -64,7 +65,8 @@
 
 ## Phase 5: Testing, Refinement, and Deployment
 
-- [ ] Write unit tests for core functionality
+- [x] Write unit tests for backend API endpoints
+- [x] Create automated tests using test-driven development
 - [ ] Perform comprehensive testing of offline capabilities
 - [ ] Test synchronization between devices
 - [ ] Fix bugs and edge cases
@@ -106,16 +108,18 @@
 - [x] Implemented database module with Turso (libSQL) connection
 - [x] Designed database schema matching TinyBase model
 - [x] Built JWT-based authentication for single user
-- [ ] Implementing API endpoints for subscription operations
+- [x] Implemented API endpoints for subscription CRUD operations
+- [x] Added database initialization and seeding
 - [ ] Creating synchronization endpoints
 
 ## Timeline Estimate
 
 - Phase 1: 1 day ✅
 - Phase 2: 7 days (complete local-first app) - In progress (70% complete)
-- Phase 3: 5 days (backend + sync) - In progress (40% complete)
+- Phase 3: 5 days (backend + sync) - In progress (70% complete)
   - Backend setup ✅
-  - API endpoints and synchronization - In progress
+  - API endpoints ✅ 
+  - Synchronization endpoints - In progress
 - Phase 4: 3 days
 - Phase 5: 2 days
 - Phase 6: Ongoing

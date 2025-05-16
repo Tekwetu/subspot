@@ -6,6 +6,6 @@ import { DatabaseInitService } from './init-db';
 @Module({
   imports: [ConfigModule],
   providers: [DatabaseService, DatabaseInitService],
-  exports: [DatabaseService, DatabaseInitService]
+  exports: [DatabaseService, DatabaseInitService],
 })
 export class DatabaseModule {}
