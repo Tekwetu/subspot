@@ -1,23 +1,57 @@
 import { useState } from 'react';
 import { StoreProvider } from './stores/StoreContext';
 import { useSubscriptions, type Subscription } from './hooks/useSubscriptions';
+import { SubscriptionForm } from './components/SubscriptionForm';
+import { Modal } from './components/Modal';
 
 // Dashboard component to display subscription data from TinyBase
 function Dashboard() {
   const { 
     subscriptionIds, 
-    getSubscription, 
+    getSubscription,
+    deleteSubscription,
     getUpcomingRenewals, 
     calculateMonthlyCost 
   } = useSubscriptions();
   
-  const [showTestForm, setShowTestForm] = useState(false);
+  // Form modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editSubscriptionId, setEditSubscriptionId] = useState<string | undefined>(undefined);
   
   // Calculate monthly cost
   const monthlyCost = calculateMonthlyCost();
   
   // Get upcoming renewals in the next 30 days
   const upcomingRenewals = getUpcomingRenewals(30);
+
+  // Open modal for adding new subscription
+  const handleAddNew = () => {
+    setEditSubscriptionId(undefined);
+    setIsModalOpen(true);
+  };
+  
+  // Open modal for editing existing subscription
+  const handleEdit = (id: string) => {
+    setEditSubscriptionId(id);
+    setIsModalOpen(true);
+  };
+  
+  // Close the form modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+  
+  // Handle save completion
+  const handleSaveComplete = () => {
+    setIsModalOpen(false);
+  };
+  
+  // Handle subscription deletion with confirmation
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this subscription?')) {
+      deleteSubscription(id);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-8">
@@ -41,7 +75,15 @@ function Dashboard() {
       
       {/* Subscriptions List */}
       <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <h2 className="text-xl font-semibold mb-4">Your Subscriptions</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Your Subscriptions</h2>
+          <button 
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+            onClick={handleAddNew}
+          >
+            Add New Subscription
+          </button>
+        </div>
         
         {subscriptionIds.length === 0 ? (
           <p className="text-gray-500">No subscriptions added yet.</p>
@@ -55,6 +97,7 @@ function Dashboard() {
                   <th className="text-left py-2">Billing Cycle</th>
                   <th className="text-left py-2">Renewal Date</th>
                   <th className="text-left py-2">Status</th>
+                  <th className="text-left py-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,6 +120,32 @@ function Dashboard() {
                           {sub.status}
                         </span>
                       </td>
+                      <td className="py-2">
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => handleEdit(id)}
+                            className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50"
+                            title="Edit"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(id)}
+                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
+                            title="Delete"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18"></path>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -84,16 +153,6 @@ function Dashboard() {
             </table>
           </div>
         )}
-        
-        <button 
-          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          onClick={() => setShowTestForm(!showTestForm)}
-        >
-          {showTestForm ? 'Hide Test Form' : 'Show Test Form'}
-        </button>
-        
-        {/* Simple test form to add a subscription */}
-        {showTestForm && <TestAddForm />}
       </div>
       
       {/* Upcoming Renewals Section */}
@@ -116,39 +175,19 @@ function Dashboard() {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-// Test form for adding a subscription
-function TestAddForm() {
-  const { addSubscription } = useSubscriptions();
-  
-  const handleAddTest = () => {
-    const today = new Date();
-    const renewal = new Date();
-    renewal.setMonth(renewal.getMonth() + 1);
-    
-    addSubscription({
-      name: 'Test Subscription',
-      price: 9.99,
-      currency: 'USD',
-      billingCycle: 'monthly',
-      startDate: today.toISOString(),
-      renewalDate: renewal.toISOString(),
-      status: 'active',
-    });
-  };
-  
-  return (
-    <div className="mt-4 p-4 border rounded">
-      <p className="mb-2">Add a test subscription to see how the app works</p>
-      <button 
-        className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded"
-        onClick={handleAddTest}
+      
+      {/* Subscription Form Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal}
+        title={editSubscriptionId ? "Edit Subscription" : "Add New Subscription"}
       >
-        Add Test Subscription
-      </button>
+        <SubscriptionForm
+          subscriptionId={editSubscriptionId}
+          onSave={handleSaveComplete}
+          onCancel={handleCloseModal}
+        />
+      </Modal>
     </div>
   );
 }

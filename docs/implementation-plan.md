@@ -20,8 +20,8 @@
 - [x] Create basic layout and navigation structure
 - [x] Build subscription list view component
 - [x] Implement subscription detail view
-- [ ] Create subscription add/edit forms
-- [ ] Add deletion confirmation dialog
+- [x] Create subscription add/edit forms
+- [x] Add deletion confirmation dialog
 - [ ] Implement search, sorting, and filtering functionality
 
 ### Dashboard and Visualization
@@ -93,7 +93,9 @@
 - [x] Created subscriptions list table
 - [x] Added upcoming renewals section
 - [x] Implemented test form for adding sample data
-- [ ] Build proper subscription form with all fields
+- [x] Built proper subscription form with all fields
+- [x] Implemented form validation
+- [x] Added edit and delete functionality
 
 ### Offline Capabilities
 - [x] Implemented automatic detection of online/offline status
@@ -103,7 +105,7 @@
 ## Timeline Estimate
 
 - Phase 1: 1 day ✅
-- Phase 2: 7 days (complete local-first app) - In progress (50% complete)
+- Phase 2: 7 days (complete local-first app) - In progress (70% complete)
 - Phase 3: 5 days (backend + sync)
 - Phase 4: 3 days
 - Phase 5: 2 days
