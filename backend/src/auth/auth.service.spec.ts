@@ -9,8 +9,9 @@ import { UnauthorizedException } from '@nestjs/common';
 describe('AuthService', () => {
   let service: AuthService;
   let jwtService: JwtService;
-  let configService: ConfigService;
-  let databaseService: DatabaseService;
+  // Remove unused variables
+  // let configService: ConfigService;
+  // let databaseService: DatabaseService;
 
   beforeEach(async () => {
     const mockJwtService = {
@@ -49,8 +50,9 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     jwtService = module.get<JwtService>(JwtService);
-    configService = module.get<ConfigService>(ConfigService);
-    databaseService = module.get<DatabaseService>(DatabaseService);
+    // Remove assignments to unused variables
+    // configService = module.get<ConfigService>(ConfigService);
+    // databaseService = module.get<DatabaseService>(DatabaseService);
   });
 
   it('should be defined', () => {
@@ -74,7 +76,12 @@ describe('AuthService', () => {
       const loginDto = { email: 'test@example.com', password: 'correct' };
       const result = await service.login(loginDto);
 
-      expect(jwtService.sign).toHaveBeenCalledWith({ sub: mockUser.id, email: mockUser.email });
+      // Create a spy for the sign method
+      const signSpy = jest.spyOn(jwtService, 'sign');
+      expect(signSpy).toHaveBeenCalledWith({
+        sub: mockUser.id,
+        email: mockUser.email,
+      });
       expect(result).toEqual({
         access_token: 'test-token',
         user: mockUser,

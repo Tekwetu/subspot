@@ -31,8 +31,13 @@ describe('AuthController', () => {
   });
 
   it('should call authService.login when login is called', async () => {
+    // Create a spy for the login method
+    const loginSpy = jest.spyOn(authService, 'login');
+
     const loginDto = { email: 'test@example.com', password: 'test' };
     await controller.login(loginDto);
-    expect(authService.login).toHaveBeenCalledWith(loginDto);
+
+    // Use the spy for verification
+    expect(loginSpy).toHaveBeenCalledWith(loginDto);
   });
 });

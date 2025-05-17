@@ -5,7 +5,8 @@ import { DatabaseService } from './database.service';
 
 describe('DatabaseService', () => {
   let service: DatabaseService;
-  let configService: ConfigService;
+  // Remove unused variable
+  // let configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,7 +27,8 @@ describe('DatabaseService', () => {
     }).compile();
 
     service = module.get<DatabaseService>(DatabaseService);
-    configService = module.get<ConfigService>(ConfigService);
+    // Remove assignment to unused variable
+    // configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {

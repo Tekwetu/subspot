@@ -5,7 +5,7 @@
 - [x] Set up React + TypeScript + Vite project
 - [x] Configure ESLint, Prettier, and TypeScript
 - [x] Configure TailwindCSS
-- [x] Create GitHub repository with README
+- [x] Create GitHub repository with README and documentation
 
 ## Phase 2: Local-First Frontend with TinyBase
 
@@ -67,6 +67,7 @@
 
 - [x] Write unit tests for backend API endpoints
 - [x] Create automated tests using test-driven development
+- [x] Fix linting and TypeScript errors
 - [ ] Perform comprehensive testing of offline capabilities
 - [ ] Test synchronization between devices
 - [ ] Fix bugs and edge cases
@@ -119,6 +120,8 @@
 - [x] Implemented API endpoints for subscription CRUD operations
 - [x] Added database initialization and seeding
 - [x] Created synchronization endpoints
+- [x] Implemented Docker setup for containerization
+- [x] Created Fly.io configuration for deployment
 
 ## Timeline Estimate
 
@@ -128,15 +131,18 @@
   - Core UI components (search/filter functionality remaining) 
   - Dashboard visualization (basic spending visualization remaining)
   - Offline features (client-side reminders remaining)
-- Phase 3: 5 days (backend + sync) - In progress (90% complete)
+- Phase 3: 5 days (backend + sync) - In progress (95% complete)
   - Backend setup ✅
   - API endpoints ✅
   - Synchronization implementation ✅
+  - Docker and deployment configuration ✅
   - Server-side validation remaining
 - Phase 4: 3 days (not started)
-- Phase 5: 2 days (partially started)
+- Phase 5: 2 days (in progress - 60% complete)
   - Backend unit tests ✅
+  - Linting and TypeScript error fixes ✅
   - Comprehensive offline and sync testing remaining
+  - Deployment remaining
 - Phase 6: Ongoing
 
 Total development time: ~18 days
