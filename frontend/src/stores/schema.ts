@@ -15,6 +15,7 @@ export const tablesSchema = {
     notes: { type: 'string', optional: true },
     // For sync purposes
     lastModified: { type: 'number' }, // timestamp
+    updatedAt: { type: 'string', optional: true }, // ISO date string
   },
 } as const;
 
@@ -23,7 +24,7 @@ export const valuesSchema = {
   // Global settings
   reminderLeadTime: { type: 'number', default: 7 }, // days before renewal
   syncStatus: { type: 'string', default: 'idle' }, // 'idle', 'syncing', 'error'
-  lastSyncTime: { type: 'number', optional: true }, // timestamp
+  lastSyncTimestamp: { type: 'number', default: 0 }, // timestamp
   onlineStatus: { type: 'boolean', default: false },
 } as const;
 

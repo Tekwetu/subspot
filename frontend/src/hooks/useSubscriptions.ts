@@ -1,87 +1,210 @@
-import { useCallback } from 'react';
-import { useStore } from '../stores/StoreContext';
-
-// Subscription interface based on our schema
-export interface Subscription {
-  id: string;
-  name: string;
-  plan?: string;
-  price: number;
-  currency: string; 
-  billingCycle: string;
-  startDate: string;
-  renewalDate: string;
-  paymentMethod?: string;
-  accountEmail?: string;
-  category?: string;
-  status: string;
-  cancellationInfo?: string;
-  notes?: string;
-  lastModified: number;
-}
+import { useCallback, useMemo } from 'react';
+import { useStore } from '../stores/useStore';
+import { useSyncContext } from '../services/sync/useSyncContext';
+import { SyncOperationType } from '../services/sync/types';
+import { useOnlineStatusContext } from '../hooks/useOnlineStatus/useOnlineStatusContext';
+import type { 
+  Subscription, 
+  SubscriptionData, 
+  NewSubscriptionData, 
+  SubscriptionUpdates 
+} from '../types/subscription';
 
 export const useSubscriptions = () => {
   const store = useStore();
+  const { syncManager, syncStatus } = useSyncContext();
+  const { isOnline } = useOnlineStatusContext();
+  
+  // Check if we have an actual sync manager (not the placeholder)
+  const hasSyncManager = syncManager !== null && typeof syncManager === 'object';
   
   // Get all subscription IDs
-  const subscriptionIds = store.getRowIds('subscriptions');
+  const subscriptionIds = useMemo(() => {
+    try {
+      // Call getRowIds directly on the store with the table ID
+      if (store.getRowIds && typeof store.getRowIds === 'function') {
+        return store.getRowIds('subscriptions') || [];
+      }
+      
+      // Fallback: return empty array and log warning
+      console.warn('Could not get subscription IDs - getRowIds is not a function on store');
+      return [];
+    } catch (error) {
+      console.error('Error getting subscription IDs:', error);
+      return [];
+    }
+  }, [store]);
 
   // Get a single subscription by ID
   const getSubscription = useCallback(
     (id: string): Subscription | null => {
-      const subscription = store.getRow('subscriptions', id);
-      if (!subscription) return null;
-      return {
-        id,
-        ...subscription as Omit<Subscription, 'id'>,
-      };
+      try {
+        // Check if store.getRow exists and is a function
+        if (store.getRow && typeof store.getRow === 'function') {
+          const row = store.getRow('subscriptions', id);
+          if (!row) return null;
+          
+          // Convert the row data to our subscription type
+          return {
+            id,
+            ...(row as Omit<Subscription, 'id'>),
+          };
+        }
+        
+        console.warn('Could not get row - getRow is not a function on store');
+        return null;
+      } catch (error) {
+        console.error('Error getting subscription:', error);
+        return null;
+      }
     },
     [store]
   );
 
   // Add a new subscription
   const addSubscription = useCallback(
-    (subscription: Omit<Subscription, 'id' | 'lastModified'>) => {
+    (subscription: NewSubscriptionData) => {
       const id = crypto.randomUUID();
-      store.setRow('subscriptions', id, {
-        ...subscription,
-        lastModified: Date.now(),
-      });
+      const now = new Date();
+      const timestamp = now.getTime();
+      const isoTimestamp = now.toISOString();
+      
+      // Add to local store first
+      try {
+        // Check if store.setRow exists and is a function
+        if (store.setRow && typeof store.setRow === 'function') {
+          store.setRow('subscriptions', id, {
+            ...subscription,
+            lastModified: timestamp,
+            updatedAt: isoTimestamp,
+          });
+        } else {
+          console.warn('Could not set row - setRow is not a function on store');
+        }
+      } catch (error) {
+        console.error('Error setting row:', error);
+        // Continue execution to try syncing
+      }
+      
+      // Queue for sync to server if online
+      if (hasSyncManager && syncManager && isOnline) {
+        syncManager.queueOperation({
+          type: SyncOperationType.CREATE,
+          entityId: id,
+          entityType: 'subscription',
+          data: { 
+            ...subscription, 
+            lastModified: timestamp, 
+            updatedAt: isoTimestamp 
+          },
+        });
+      }
+      
       return id;
     },
-    [store]
+    [store, syncManager, isOnline, hasSyncManager]
   );
 
   // Update an existing subscription
   const updateSubscription = useCallback(
-    (id: string, updates: Partial<Omit<Subscription, 'id' | 'lastModified'>>) => {
-      // Get current subscription data
-      const current = store.getRow('subscriptions', id);
-      if (!current) return false;
-      
-      // Update with new data
-      store.transaction(() => {
-        for (const [key, value] of Object.entries(updates)) {
-          if (value !== undefined) {
-            store.setCell('subscriptions', id, key as keyof Omit<Subscription, 'id'>, value);
+    (id: string, updates: SubscriptionUpdates) => {
+      try {
+        // Check if store.getRow exists and is a function
+        if (!store.getRow || typeof store.getRow !== 'function') {
+          console.warn('Could not get row - getRow is not a function on store');
+          return false;
+        }
+        
+        const row = store.getRow('subscriptions', id);
+        if (!row) return false;
+        
+        const now = new Date();
+        const timestamp = now.getTime();
+        const isoTimestamp = now.toISOString();
+        
+        // Update local store using transaction
+        store.transaction(() => {
+          // Check if store.setCell exists and is a function
+          if (!store.setCell || typeof store.setCell !== 'function') {
+            console.warn('Could not update cells - setCell is not a function on store');
+            return;
+          }
+          
+          // Update all the provided fields
+          for (const [key, value] of Object.entries(updates)) {
+            if (value !== undefined) {
+              // Use type assertion to handle the string keys
+              store.setCell('subscriptions', id, key as keyof SubscriptionData, value);
+            }
+          }
+          
+          // Update timestamps
+          store.setCell('subscriptions', id, 'lastModified', timestamp);
+          store.setCell('subscriptions', id, 'updatedAt', isoTimestamp);
+        });
+        
+        // Queue for sync to server if online
+        if (hasSyncManager && syncManager && isOnline) {
+          try {
+            // Get updated row for sync
+            if (!store.getRow || typeof store.getRow !== 'function') {
+              console.warn('Could not get updated row - getRow is not a function on store');
+              return false;
+            }
+            
+            const updatedRow = store.getRow('subscriptions', id);
+            if (!updatedRow) return false;
+            
+            syncManager.queueOperation({
+              type: SyncOperationType.UPDATE,
+              entityId: id,
+              entityType: 'subscription',
+              data: updatedRow,
+            });
+          } catch (error) {
+            console.error('Error syncing update:', error);
+            return false;
           }
         }
-        // Update lastModified timestamp
-        store.setCell('subscriptions', id, 'lastModified', Date.now());
-      });
+      } catch (error) {
+        console.error('Error in update subscription:', error);
+        return false;
+      }
       
       return true;
     },
-    [store]
+    [store, syncManager, isOnline, hasSyncManager]
   );
 
   // Delete a subscription
   const deleteSubscription = useCallback(
     (id: string) => {
-      store.delRow('subscriptions', id);
+      // Delete from local store first
+      try {
+        // Access the delRow method safely
+        if (store.delRow && typeof store.delRow === 'function') {
+          store.delRow('subscriptions', id);
+        } else {
+          console.warn('Could not delete row - delRow is not a function on store');
+          // Continue execution to try syncing
+        }
+      } catch (error) {
+        console.error('Error deleting row:', error);
+        // Continue execution to try syncing
+      }
+      
+      // Queue for sync to server if online
+      if (hasSyncManager && syncManager && isOnline) {
+        syncManager.queueOperation({
+          type: SyncOperationType.DELETE,
+          entityId: id,
+          entityType: 'subscription',
+        });
+      }
+      
       return true;
     },
-    [store]
+    [store, syncManager, isOnline, hasSyncManager]
   );
 
   // Get upcoming renewals
@@ -109,7 +232,7 @@ export const useSubscriptions = () => {
   const calculateMonthlyCost = useCallback(
     (): number => {
       return subscriptionIds.reduce((total: number, id: string) => {
-        const sub = getSubscription(id);
+        const sub: Subscription | null = getSubscription(id);
         if (!sub || sub.status !== 'active') return total;
         
         let monthlyPrice = sub.price;
@@ -145,5 +268,8 @@ export const useSubscriptions = () => {
     deleteSubscription,
     getUpcomingRenewals,
     calculateMonthlyCost,
+    isOnline,
+    syncStatus,
+    hasSyncManager,
   };
 };

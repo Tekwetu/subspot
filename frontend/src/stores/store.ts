@@ -1,6 +1,7 @@
 import { createStore } from 'tinybase/with-schemas';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
 import { tablesSchema, valuesSchema } from './schema';
+import type { Store } from 'tinybase';
 
 // Create a typed store with our schema
 export const createAppStore = () => {
@@ -12,6 +13,7 @@ export const createAppStore = () => {
     reminderLeadTime: 7,
     syncStatus: 'idle',
     onlineStatus: navigator.onLine, // Initial online status
+    lastSyncTimestamp: 0,
   });
 
   return store;
@@ -19,8 +21,9 @@ export const createAppStore = () => {
 
 // Create persister for local storage
 export const createAppPersister = async (store: ReturnType<typeof createAppStore>) => {
-  // Cast to the expected type for createLocalPersister
-  const persister = createLocalPersister(store as any, 'subscription-manager');
+  // Create a local persister with the storage key
+  // Cast through unknown for proper typing
+  const persister = createLocalPersister(store as unknown as Store, 'subscription-manager');
   
   // Initialize local storage persistence
   try {
@@ -32,19 +35,25 @@ export const createAppPersister = async (store: ReturnType<typeof createAppStore
     // If no data exists, this is probably first run
   }
 
-  // Set up auto-save - we don't need to clean up the listeners as they'll be garbage collected with the store
-  store.addTablesListener(() => {
-    persister.save().catch((error) => {
-      console.error('Failed to save data to local storage:', error);
-    });
-  });
+  // Debounce save operations to avoid too many writes
+  let saveTimeout: number | null = null;
+  const debouncedSave = () => {
+    if (saveTimeout !== null) {
+      clearTimeout(saveTimeout);
+    }
+    saveTimeout = window.setTimeout(() => {
+      persister.save().catch(error => {
+        console.error('Failed to save data to local storage:', error);
+      });
+      saveTimeout = null;
+    }, 100); // 100ms debounce
+  };
 
+  // Set up auto-save for tables
+  store.addTablesListener(debouncedSave);
+  
   // Also save when values change
-  store.addValuesListener(() => {
-    persister.save().catch((error) => {
-      console.error('Failed to save data to local storage:', error);
-    });
-  });
+  store.addValuesListener(debouncedSave);
 
   return persister;
 };
@@ -54,10 +63,18 @@ export const setupOnlineStatusTracking = (store: ReturnType<typeof createAppStor
   // Track online status
   const updateOnlineStatus = () => {
     store.setValue('onlineStatus', navigator.onLine);
+    
+    // If we just went online, update the timestamp to trigger a sync
+    if (navigator.onLine) {
+      store.setValue('lastSyncTimestamp', Date.now());
+    }
   };
 
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
+
+  // Initial status
+  updateOnlineStatus();
 
   return () => {
     window.removeEventListener('online', updateOnlineStatus);

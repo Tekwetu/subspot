@@ -1,16 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createAppStore, createAppPersister, setupOnlineStatusTracking } from './store';
-
-// Create a context for non-React code to access the store
-const StoreContext = createContext<ReturnType<typeof createAppStore> | null>(null);
-
-export const useStore = () => {
-  const store = useContext(StoreContext);
-  if (!store) {
-    throw new Error('useStore must be used within a StoreProvider');
-  }
-  return store;
-};
+import { StoreContext } from './StoreContextDef';
 
 interface StoreProviderProps {
   children: ReactNode;
@@ -26,13 +16,13 @@ export function StoreProvider({ children }: StoreProviderProps) {
       try {
         const newStore = createAppStore();
         await createAppPersister(newStore);
-        
+
         // Set up online status tracking
         const cleanup = setupOnlineStatusTracking(newStore);
-        
+
         setStore(newStore);
         setIsLoading(false);
-        
+
         return cleanup;
       } catch (error) {
         console.error('Failed to initialize store:', error);
@@ -42,7 +32,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
     };
 
     const cleanupFn = initStore();
-    
+
     // Clean up on unmount
     return () => {
       cleanupFn.then(cleanup => cleanup());
@@ -57,9 +47,5 @@ export function StoreProvider({ children }: StoreProviderProps) {
     return <div>Failed to initialize data store</div>;
   }
 
-  return (
-    <StoreContext.Provider value={store}>
-      {children}
-    </StoreContext.Provider>
-  );
+  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }

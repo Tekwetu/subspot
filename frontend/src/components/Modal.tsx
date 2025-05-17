@@ -16,23 +16,23 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     } else {
       document.body.style.overflow = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-  
+
   if (!isOpen) return null;
-  
+
   // Handle closing the modal when clicking the backdrop
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
-  
+
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
       onClick={handleBackdropClick}
     >
@@ -42,10 +42,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             <h2 className="text-xl font-semibold">{title}</h2>
           </div>
         )}
-        
-        <div className="overflow-y-auto p-4 max-h-[calc(90vh-8rem)]">
-          {children}
-        </div>
+
+        <div className="overflow-y-auto p-4 max-h-[calc(90vh-8rem)]">{children}</div>
       </div>
     </div>
   );
