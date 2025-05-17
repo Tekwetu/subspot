@@ -125,8 +125,12 @@ function Dashboard() {
                       <td className="py-2">
                         {sub.currency} {sub.price}
                       </td>
-                      <td className="py-2">{sub.billingCycle}</td>
-                      <td className="py-2">{new Date(sub.renewalDate).toLocaleDateString()}</td>
+                      <td className="py-2">{sub.billingCycle || 'N/A'}</td>
+                      <td className="py-2">
+                        {sub.renewalDate 
+                          ? new Date(sub.renewalDate).toLocaleDateString() 
+                          : 'Invalid Date'}
+                      </td>
                       <td className="py-2">
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${
@@ -205,10 +209,14 @@ function Dashboard() {
               <div key={sub.id} className="border-b pb-3">
                 <div className="flex justify-between">
                   <h3 className="font-medium">{sub.name}</h3>
-                  <span className="text-sm">{new Date(sub.renewalDate).toLocaleDateString()}</span>
+                  <span className="text-sm">
+                    {sub.renewalDate 
+                      ? new Date(sub.renewalDate).toLocaleDateString() 
+                      : 'Invalid Date'}
+                  </span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  {sub.currency} {sub.price} ({sub.billingCycle})
+                  {sub.currency} {sub.price} ({sub.billingCycle || 'N/A'})
                 </p>
               </div>
             ))}

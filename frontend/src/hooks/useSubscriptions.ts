@@ -219,14 +219,25 @@ export const useSubscriptions = () => {
       
       return subscriptionIds
         .map((id: string) => getSubscription(id))
-        .filter((sub): sub is Subscription => 
-          sub !== null && 
-          sub.status === 'active' &&
-          new Date(sub.renewalDate) <= futureDate
-        )
-        .sort((a: Subscription, b: Subscription) => 
-          new Date(a.renewalDate).getTime() - new Date(b.renewalDate).getTime()
-        );
+        .filter((sub): sub is Subscription => {
+          // Skip null subscriptions
+          if (sub === null) return false;
+          
+          // Skip inactive subscriptions
+          if (sub.status !== 'active') return false;
+          
+          // Skip if renewal date doesn't exist
+          if (!sub.renewalDate) return false;
+          
+          // Include if renewal date is in the future window
+          return new Date(sub.renewalDate) <= futureDate;
+        })
+        .sort((a: Subscription, b: Subscription) => {
+          // Both subscriptions should have renewalDate at this point, but add a safeguard
+          const dateA = a.renewalDate ? new Date(a.renewalDate).getTime() : 0;
+          const dateB = b.renewalDate ? new Date(b.renewalDate).getTime() : 0;
+          return dateA - dateB;
+        });
     },
     [subscriptionIds, getSubscription]
   );
@@ -240,7 +251,9 @@ export const useSubscriptions = () => {
         
         let monthlyPrice = sub.price;
         // Convert non-monthly prices to monthly equivalent
-        switch (sub.billingCycle.toLowerCase()) {
+        // Default to monthly if billingCycle is undefined
+        const cycle = sub.billingCycle?.toLowerCase() || 'monthly';
+        switch (cycle) {
           case 'yearly':
           case 'annual':
             monthlyPrice = sub.price / 12;

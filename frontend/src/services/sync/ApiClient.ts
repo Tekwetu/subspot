@@ -6,6 +6,27 @@ import type {
 import type { SyncOperation } from './types';
 import { SyncOperationType } from './types';
 
+// Type for backend subscription data (with snake_case)
+interface BackendSubscription {
+  id: string;
+  name: string;
+  plan?: string;
+  price: number;
+  currency: string;
+  billing_cycle: string;
+  start_date: string;
+  renewal_date: string;
+  payment_method?: string;
+  account?: string;
+  category?: string;
+  status: string;
+  cancellation_info?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  synced_at: string;
+}
+
 /**
  * Handle all API communication with the backend
  */
@@ -21,6 +42,54 @@ export class ApiClient {
     if (typeof window !== 'undefined' && window.localStorage) {
       this.token = localStorage.getItem('subscription_manager_token');
     }
+  }
+  
+  /**
+   * Transform a backend subscription (snake_case) to frontend subscription (camelCase)
+   */
+  private transformSubscription(backendSub: BackendSubscription): Subscription {
+    return {
+      id: backendSub.id,
+      name: backendSub.name,
+      plan: backendSub.plan,
+      price: backendSub.price,
+      currency: backendSub.currency,
+      billingCycle: backendSub.billing_cycle,
+      startDate: backendSub.start_date,
+      renewalDate: backendSub.renewal_date,
+      paymentMethod: backendSub.payment_method,
+      accountEmail: backendSub.account,
+      category: backendSub.category,
+      status: backendSub.status,
+      cancellationInfo: backendSub.cancellation_info,
+      notes: backendSub.notes,
+      lastModified: new Date(backendSub.updated_at).getTime(),
+      updatedAt: backendSub.updated_at
+    };
+  }
+  
+  /**
+   * Transform frontend subscription (camelCase) to backend format (snake_case)
+   */
+  private transformToBackendFormat(subscription: Partial<SubscriptionData>): Record<string, unknown> {
+    const backendFormat: Record<string, unknown> = {};
+    
+    // Map camelCase to snake_case
+    if (subscription.name !== undefined) backendFormat.name = subscription.name;
+    if (subscription.plan !== undefined) backendFormat.plan = subscription.plan;
+    if (subscription.price !== undefined) backendFormat.price = subscription.price;
+    if (subscription.currency !== undefined) backendFormat.currency = subscription.currency;
+    if (subscription.billingCycle !== undefined) backendFormat.billing_cycle = subscription.billingCycle;
+    if (subscription.startDate !== undefined) backendFormat.start_date = subscription.startDate;
+    if (subscription.renewalDate !== undefined) backendFormat.renewal_date = subscription.renewalDate;
+    if (subscription.paymentMethod !== undefined) backendFormat.payment_method = subscription.paymentMethod;
+    if (subscription.accountEmail !== undefined) backendFormat.account = subscription.accountEmail;
+    if (subscription.category !== undefined) backendFormat.category = subscription.category;
+    if (subscription.status !== undefined) backendFormat.status = subscription.status;
+    if (subscription.cancellationInfo !== undefined) backendFormat.cancellation_info = subscription.cancellationInfo;
+    if (subscription.notes !== undefined) backendFormat.notes = subscription.notes;
+    
+    return backendFormat;
   }
   
   /**
@@ -63,7 +132,8 @@ export class ApiClient {
       throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
     }
     
-    return response.json();
+    const backendSubscriptions: BackendSubscription[] = await response.json();
+    return backendSubscriptions.map(sub => this.transformSubscription(sub));
   }
   
   /**
@@ -82,7 +152,8 @@ export class ApiClient {
       throw new Error(`Failed to fetch subscription: ${response.statusText}`);
     }
     
-    return response.json();
+    const backendSubscription: BackendSubscription = await response.json();
+    return this.transformSubscription(backendSubscription);
   }
   
   /**
@@ -93,17 +164,20 @@ export class ApiClient {
       throw new Error('Authentication required');
     }
     
+    const backendData = this.transformToBackendFormat(subscription);
+    
     const response = await fetch(`${this.apiBaseUrl}/subscriptions`, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify(subscription),
+      body: JSON.stringify(backendData),
     });
     
     if (!response.ok) {
       throw new Error(`Failed to create subscription: ${response.statusText}`);
     }
     
-    return response.json();
+    const backendSubscription: BackendSubscription = await response.json();
+    return this.transformSubscription(backendSubscription);
   }
   
   /**
@@ -114,17 +188,23 @@ export class ApiClient {
       throw new Error('Authentication required');
     }
     
+    const backendData = this.transformToBackendFormat({
+      ...subscription,
+      updatedAt: new Date().toISOString()
+    });
+    
     const response = await fetch(`${this.apiBaseUrl}/subscriptions/${id}`, {
       method: 'PATCH',
       headers: this.getHeaders(),
-      body: JSON.stringify({ ...subscription, updatedAt: new Date().toISOString() }),
+      body: JSON.stringify(backendData),
     });
     
     if (!response.ok) {
       throw new Error(`Failed to update subscription: ${response.statusText}`);
     }
     
-    return response.json();
+    const backendSubscription: BackendSubscription = await response.json();
+    return this.transformSubscription(backendSubscription);
   }
   
   /**
