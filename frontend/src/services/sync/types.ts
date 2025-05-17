@@ -1,59 +1,74 @@
-/**
- * Types for the sync service
- */
+import type { SubscriptionData, SubscriptionUpdates } from '../../types/subscription';
 
-// Represents a sync operation for a record
+// Sync operation types
 export enum SyncOperationType {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
 }
 
-// Structure for a pending sync operation
+// Sync operation interface
 export interface SyncOperation {
   id: string;
   type: SyncOperationType;
   entityId: string;
-  entityType: string;
-  data?: Record<string, unknown>;
+  entityType: 'subscription';
+  data?: SubscriptionData | SubscriptionUpdates;
   timestamp: number;
   attempts: number;
-  error?: string;
+  lastError?: string;
 }
 
-// Conflict resolution strategies
+// Sync manager status
+export enum SyncStatus {
+  IDLE = 'idle',
+  SYNCING = 'syncing',
+  ERROR = 'error',
+  OFFLINE = 'offline',
+}
+
+// Conflict resolution strategy
 export enum ConflictResolutionStrategy {
-  LAST_WRITE_WINS = 'LAST_WRITE_WINS',
-  SERVER_WINS = 'SERVER_WINS',
-  CLIENT_WINS = 'CLIENT_WINS',
-  MANUAL = 'MANUAL',
+  SERVER_WINS = 'server_wins',
+  CLIENT_WINS = 'client_wins',
+  LAST_WRITE_WINS = 'last_write_wins',
 }
 
-// Configuration for the sync service
+// Sync manager configuration
 export interface SyncConfig {
-  syncInterval: number;
+  syncInterval: number; // in milliseconds
   maxRetryAttempts: number;
   conflictResolution: ConflictResolutionStrategy;
   autoSync: boolean;
 }
 
-// Sync status tracking
-export enum SyncStatus {
-  IDLE = 'IDLE',
-  SYNCING = 'SYNCING',
-  OFFLINE = 'OFFLINE',
-  ERROR = 'ERROR',
-}
-
-// The result of a sync operation
+// Result of a sync operation
 export interface SyncResult {
   success: boolean;
   error?: string;
-  conflicts?: Array<{
-    entityId: string;
-    entityType: string;
-    clientData: Record<string, unknown>;
-    serverData: Record<string, unknown>;
-    resolution?: string;
+  operations?: Array<{
+    id: string;
+    success: boolean;
+    error?: string;
   }>;
+}
+
+// Authentication types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  user: {
+    id: string;
+    email: string;
+  };
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  token: string | null;
+  user: { id: string; email: string } | null;
 }

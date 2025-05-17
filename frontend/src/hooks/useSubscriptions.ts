@@ -3,6 +3,7 @@ import { useStore } from '../stores/useStore';
 import { useSyncContext } from '../services/sync/useSyncContext';
 import { SyncOperationType } from '../services/sync/types';
 import { useOnlineStatusContext } from '../hooks/useOnlineStatus/useOnlineStatusContext';
+import { useAuth } from '../services/auth/useAuth';
 import type { 
   Subscription, 
   SubscriptionData, 
@@ -14,6 +15,8 @@ export const useSubscriptions = () => {
   const store = useStore();
   const { syncManager, syncStatus } = useSyncContext();
   const { isOnline } = useOnlineStatusContext();
+  // Auth state used by sync manager
+  useAuth();
   
   // Check if we have an actual sync manager (not the placeholder)
   const hasSyncManager = syncManager !== null && typeof syncManager === 'object';

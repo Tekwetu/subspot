@@ -46,12 +46,22 @@ The application uses TinyBase with a schema-based approach to define the subscri
    npm install
    ```
 
-2. Run the development server:
+2. Configure environment:
+   ```
+   cp .env.example .env
+   ```
+   
+   Edit the `.env` file to set:
+   ```
+   VITE_API_URL=http://localhost:3000
+   ```
+
+3. Run the development server:
    ```
    npm run dev
    ```
 
-3. Build for production:
+4. Build for production:
    ```
    npm run build
    ```
@@ -80,6 +90,17 @@ The app follows a local-first architecture:
 - Complete proper subscription form with all fields
 - Add search, sorting, and filtering capabilities
 - Implement client-side reminders
-- Build backend integration with Turso and NestJS
 - Add data synchronization between devices
 - Build data import/export functionality
+
+## API Integration
+
+The frontend connects to the backend API using the URL specified in the `.env` file:
+
+- **Development**: API expected at `http://localhost:3000` by default
+- **Production**: Set `VITE_API_URL` to your production backend URL
+
+The app uses a local-first approach that allows it to work offline. When online:
+1. Changes made while offline are synced to the server
+2. The latest data is pulled from the server
+3. Conflicts are resolved using a timestamp-based strategy

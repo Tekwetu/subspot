@@ -8,6 +8,9 @@ import { OnlineStatusProvider } from './hooks/useOnlineStatus/OnlineStatusContex
 import { OnlineStatusIndicator } from './components/OnlineStatusIndicator';
 import { SyncProvider } from './services/sync/SyncContext';
 import { SyncStatusIndicator } from './components/SyncStatusIndicator';
+import { AuthProvider } from './services/auth/AuthContext';
+import { useAuth } from './services/auth/useAuth';
+import { LoginForm } from './components/LoginForm';
 
 // Dashboard component to display subscription data from TinyBase
 function Dashboard() {
@@ -230,14 +233,23 @@ function Dashboard() {
 }
 
 // Main app wrapped with StoreProvider
+// Auth-aware app wrapper
+function AuthenticatedApp() {
+  const { isAuthenticated } = useAuth();
+  
+  return isAuthenticated ? <Dashboard /> : <LoginForm />;
+}
+
 function App() {
   return (
     <StoreProvider>
-      <OnlineStatusProvider>
-        <SyncProvider>
-          <Dashboard />
-        </SyncProvider>
-      </OnlineStatusProvider>
+      <AuthProvider>
+        <OnlineStatusProvider>
+          <SyncProvider>
+            <AuthenticatedApp />
+          </SyncProvider>
+        </OnlineStatusProvider>
+      </AuthProvider>
     </StoreProvider>
   );
 }

@@ -11,16 +11,53 @@ import { SyncOperationType } from './types';
  */
 export class ApiClient {
   private apiBaseUrl: string;
+  private token: string | null = null;
   
-  constructor(apiBaseUrl: string = '/api') {
-    this.apiBaseUrl = apiBaseUrl;
+  constructor(apiBaseUrl?: string) {
+    // Use environment variable from .env file, fallback to default if not set
+    this.apiBaseUrl = apiBaseUrl || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    
+    // Try to get token from localStorage (if we're in a browser environment)
+    if (typeof window !== 'undefined' && window.localStorage) {
+      this.token = localStorage.getItem('subscription_manager_token');
+    }
+  }
+  
+  /**
+   * Update the authentication token
+   */
+  setToken(token: string | null): void {
+    this.token = token;
+  }
+  
+  /**
+   * Get headers for authenticated requests
+   */
+  private getHeaders(contentType = true): HeadersInit {
+    const headers: HeadersInit = {};
+    
+    if (contentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    
+    return headers;
   }
   
   /**
    * Fetch all subscriptions from the server
    */
   async fetchSubscriptions(): Promise<Subscription[]> {
-    const response = await fetch(`${this.apiBaseUrl}/subscriptions`);
+    if (!this.token) {
+      throw new Error('Authentication required');
+    }
+    
+    const response = await fetch(`${this.apiBaseUrl}/subscriptions`, {
+      headers: this.getHeaders(false)
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
@@ -33,7 +70,13 @@ export class ApiClient {
    * Fetch a single subscription from the server
    */
   async fetchSubscription(id: string): Promise<Subscription> {
-    const response = await fetch(`${this.apiBaseUrl}/subscriptions/${id}`);
+    if (!this.token) {
+      throw new Error('Authentication required');
+    }
+    
+    const response = await fetch(`${this.apiBaseUrl}/subscriptions/${id}`, {
+      headers: this.getHeaders(false)
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch subscription: ${response.statusText}`);
@@ -46,11 +89,13 @@ export class ApiClient {
    * Create a new subscription on the server
    */
   async createSubscription(subscription: SubscriptionData): Promise<Subscription> {
+    if (!this.token) {
+      throw new Error('Authentication required');
+    }
+    
     const response = await fetch(`${this.apiBaseUrl}/subscriptions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify(subscription),
     });
     
@@ -65,11 +110,13 @@ export class ApiClient {
    * Update an existing subscription on the server
    */
   async updateSubscription(id: string, subscription: SubscriptionUpdates): Promise<Subscription> {
+    if (!this.token) {
+      throw new Error('Authentication required');
+    }
+    
     const response = await fetch(`${this.apiBaseUrl}/subscriptions/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify({ ...subscription, updatedAt: new Date().toISOString() }),
     });
     
@@ -84,8 +131,13 @@ export class ApiClient {
    * Delete a subscription from the server
    */
   async deleteSubscription(id: string): Promise<void> {
+    if (!this.token) {
+      throw new Error('Authentication required');
+    }
+    
     const response = await fetch(`${this.apiBaseUrl}/subscriptions/${id}`, {
       method: 'DELETE',
+      headers: this.getHeaders(false)
     });
     
     if (!response.ok) {
@@ -128,5 +180,32 @@ export class ApiClient {
     } catch {
       return false;
     }
+  }
+  
+  /**
+   * Login to the backend and get an authentication token
+   */
+  async login(email: string, password: string): Promise<{ token: string; user: { id: string; email: string } }> {
+    const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Login failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Store the token for future requests
+    this.setToken(data.access_token);
+    
+    return {
+      token: data.access_token,
+      user: data.user,
+    };
   }
 }

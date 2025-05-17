@@ -26,6 +26,13 @@ export class SyncManager {
   private syncTimer: number | null = null;
   private statusListeners: ((status: SyncStatus) => void)[] = [];
   
+  /**
+   * Get the API client instance
+   */
+  getApiClient(): ApiClient {
+    return this.apiClient;
+  }
+  
   constructor(
     store: Store<AppSchema>,
     syncQueue: SyncQueue = new SyncQueue(),
