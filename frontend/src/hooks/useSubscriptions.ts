@@ -4,6 +4,9 @@ import { useSyncContext } from '../services/sync/useSyncContext';
 import { SyncOperationType } from '../services/sync/types';
 import { useOnlineStatusContext } from '../hooks/useOnlineStatus/useOnlineStatusContext';
 import { useAuth } from '../services/auth/useAuth';
+import * as UiReact from 'tinybase/ui-react';
+import type { WithSchemas } from 'tinybase/ui-react/with-schemas';
+import type { AppSchema } from '../stores/schema';
 import type { 
   Subscription, 
   SubscriptionData, 
@@ -21,22 +24,14 @@ export const useSubscriptions = () => {
   // Check if we have an actual sync manager (not the placeholder)
   const hasSyncManager = syncManager !== null && typeof syncManager === 'object';
   
-  // Get all subscription IDs
-  const subscriptionIds = useMemo(() => {
-    try {
-      // Call getRowIds directly on the store with the table ID
-      if (store.getRowIds && typeof store.getRowIds === 'function') {
-        return store.getRowIds('subscriptions') || [];
-      }
-      
-      // Fallback: return empty array and log warning
-      console.warn('Could not get subscription IDs - getRowIds is not a function on store');
-      return [];
-    } catch (error) {
-      console.error('Error getting subscription IDs:', error);
-      return [];
-    }
-  }, [store]);
+  // Use the schema-based typed hooks
+  const UiReactWithSchemas = UiReact as unknown as WithSchemas<AppSchema>;
+  const { useRowIds } = UiReactWithSchemas;
+  
+  // Get all subscription IDs using the typed hook
+  // This automatically re-renders components when the subscription data changes
+  const rawSubscriptionIds = useRowIds('subscriptions', store);
+  const subscriptionIds = useMemo(() => rawSubscriptionIds || [], [rawSubscriptionIds]);
 
   // Get a single subscription by ID
   const getSubscription = useCallback(
@@ -72,15 +67,22 @@ export const useSubscriptions = () => {
       const timestamp = now.getTime();
       const isoTimestamp = now.toISOString();
       
+      // Prepare the full subscription object with required fields
+      const fullSubscription = {
+        ...subscription,
+        lastModified: timestamp,
+        updatedAt: isoTimestamp,
+      };
+      
       // Add to local store first
       try {
         // Check if store.setRow exists and is a function
         if (store.setRow && typeof store.setRow === 'function') {
-          store.setRow('subscriptions', id, {
-            ...subscription,
-            lastModified: timestamp,
-            updatedAt: isoTimestamp,
-          });
+          // This will trigger reactive UI updates through TinyBase
+          store.setRow('subscriptions', id, fullSubscription);
+          
+          // Log success for debugging
+          console.log(`Added subscription to local store: ${id}`, fullSubscription);
         } else {
           console.warn('Could not set row - setRow is not a function on store');
         }
@@ -144,6 +146,8 @@ export const useSubscriptions = () => {
           // Update timestamps
           store.setCell('subscriptions', id, 'lastModified', timestamp);
           store.setCell('subscriptions', id, 'updatedAt', isoTimestamp);
+          
+          console.log(`Updated subscription in local store: ${id}`, updates);
         });
         
         // Queue for sync to server if online
@@ -186,7 +190,9 @@ export const useSubscriptions = () => {
       try {
         // Access the delRow method safely
         if (store.delRow && typeof store.delRow === 'function') {
+          // This will trigger reactive UI updates through TinyBase
           store.delRow('subscriptions', id);
+          console.log(`Deleted subscription from local store: ${id}`);
         } else {
           console.warn('Could not delete row - delRow is not a function on store');
           // Continue execution to try syncing

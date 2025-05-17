@@ -30,6 +30,9 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
 
   // Validation state
   const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+  
+  // Loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load subscription data if in edit mode
   useEffect(() => {
@@ -120,6 +123,11 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
     e.preventDefault();
 
     if (!validateForm()) return;
+    
+    // Prevent double submission
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
 
     // Convert dates to ISO strings
     const formattedData = {
@@ -128,18 +136,34 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
       renewalDate: new Date(formData.renewalDate).toISOString(),
     };
 
-    let id: string;
-    if (isEditMode && subscriptionId) {
-      // Update existing subscription
-      updateSubscription(subscriptionId, formattedData);
-      id = subscriptionId;
-    } else {
-      // Add new subscription
-      id = addSubscription(formattedData);
-    }
+    try {
+      let id: string;
+      if (isEditMode && subscriptionId) {
+        // Update existing subscription
+        const success = updateSubscription(subscriptionId, formattedData);
+        id = subscriptionId;
+        
+        if (success) {
+          console.log('Successfully updated subscription:', id);
+        } else {
+          console.error('Failed to update subscription:', id);
+          throw new Error('Failed to update subscription');
+        }
+      } else {
+        // Add new subscription - this will be added to the local store immediately
+        // which triggers a UI update through TinyBase's reactive nature
+        id = addSubscription(formattedData);
+        console.log('Successfully added new subscription:', id);
+      }
 
-    // Call onSave callback with the subscription ID
-    if (onSave) onSave(id);
+      // Call onSave callback with the subscription ID
+      if (onSave) onSave(id);
+    } catch (error) {
+      console.error('Error saving subscription:', error);
+      alert('There was an error saving the subscription. Please try again.');
+      // In case of error, allow resubmission
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -410,15 +434,17 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={isSubmitting}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={isSubmitting}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isEditMode ? 'Update' : 'Add'} Subscription
+            {isSubmitting ? 'Saving...' : `${isEditMode ? 'Update' : 'Add'} Subscription`}
           </button>
         </div>
       </form>

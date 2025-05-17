@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { StoreProvider } from './stores/StoreContext';
 import { useSubscriptions } from './hooks/useSubscriptions';
 import type { Subscription } from './types/subscription';
@@ -49,10 +49,13 @@ function Dashboard() {
     setIsModalOpen(false);
   };
 
-  // Handle save completion
-  const handleSaveComplete = () => {
-    setIsModalOpen(false);
-  };
+  // Handle save completion - make modal closure more reliable
+  const handleSaveComplete = useCallback(() => {
+    // Use setTimeout to ensure state updates have propagated
+    setTimeout(() => {
+      setIsModalOpen(false);
+    }, 100);
+  }, []);
 
   // Handle subscription deletion with confirmation
   const handleDelete = (id: string) => {
