@@ -7,7 +7,7 @@ export interface Subscription {
   name: string;
   plan?: string;
   price: number;
-  currency: string; 
+  currency: string;
   billingCycle: string;
   startDate: string;
   renewalDate: string;

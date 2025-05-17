@@ -6,10 +6,10 @@ import { SyncContext } from './SyncContextDef';
  */
 export function useSyncContext() {
   const context = useContext(SyncContext);
-  
+
   if (context === undefined) {
     throw new Error('useSyncContext must be used within a SyncProvider');
   }
-  
+
   return context;
 }

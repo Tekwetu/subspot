@@ -130,8 +130,8 @@ function Dashboard() {
                       </td>
                       <td className="py-2">{sub.billingCycle || 'N/A'}</td>
                       <td className="py-2">
-                        {sub.renewalDate 
-                          ? new Date(sub.renewalDate).toLocaleDateString() 
+                        {sub.renewalDate
+                          ? new Date(sub.renewalDate).toLocaleDateString()
                           : 'Invalid Date'}
                       </td>
                       <td className="py-2">
@@ -213,8 +213,8 @@ function Dashboard() {
                 <div className="flex justify-between">
                   <h3 className="font-medium">{sub.name}</h3>
                   <span className="text-sm">
-                    {sub.renewalDate 
-                      ? new Date(sub.renewalDate).toLocaleDateString() 
+                    {sub.renewalDate
+                      ? new Date(sub.renewalDate).toLocaleDateString()
                       : 'Invalid Date'}
                   </span>
                 </div>
@@ -247,7 +247,7 @@ function Dashboard() {
 // Auth-aware app wrapper
 function AuthenticatedApp() {
   const { isAuthenticated } = useAuth();
-  
+
   return isAuthenticated ? <Dashboard /> : <LoginForm />;
 }
 

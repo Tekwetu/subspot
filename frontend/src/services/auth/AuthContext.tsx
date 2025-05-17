@@ -1,7 +1,4 @@
-import { 
-  useState, 
-  useEffect
-} from 'react';
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { LoginResponse, AuthState, LoginCredentials } from '../sync/types';
 import type { AuthContextType } from './types';
@@ -28,7 +25,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const token = localStorage.getItem(TOKEN_STORAGE_KEY);
       const userJson = localStorage.getItem(USER_STORAGE_KEY);
-      
+
       if (token && userJson) {
         const user = JSON.parse(userJson);
         setAuthState({
@@ -48,7 +45,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Login function
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      // Remove trailing slash if present for consistency
+      if (apiUrl.endsWith('/')) {
+        apiUrl = apiUrl.slice(0, -1);
+      }
+      
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
@@ -62,7 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data: LoginResponse = await response.json();
-      
+
       // Save to state
       setAuthState({
         isAuthenticated: true,
@@ -73,7 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Save to localStorage
       localStorage.setItem(TOKEN_STORAGE_KEY, data.access_token);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
-      
+
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -102,9 +104,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }

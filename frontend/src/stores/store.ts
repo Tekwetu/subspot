@@ -24,7 +24,7 @@ export const createAppPersister = async (store: ReturnType<typeof createAppStore
   // Create a local persister with the storage key
   // Cast through unknown for proper typing
   const persister = createLocalPersister(store as unknown as Store, 'subscription-manager');
-  
+
   // Initialize local storage persistence
   try {
     // Try to load data from localStorage
@@ -51,7 +51,7 @@ export const createAppPersister = async (store: ReturnType<typeof createAppStore
 
   // Set up auto-save for tables
   store.addTablesListener(debouncedSave);
-  
+
   // Also save when values change
   store.addValuesListener(debouncedSave);
 
@@ -63,7 +63,7 @@ export const setupOnlineStatusTracking = (store: ReturnType<typeof createAppStor
   // Track online status
   const updateOnlineStatus = () => {
     store.setValue('onlineStatus', navigator.onLine);
-    
+
     // If we just went online, update the timestamp to trigger a sync
     if (navigator.onLine) {
       store.setValue('lastSyncTimestamp', Date.now());

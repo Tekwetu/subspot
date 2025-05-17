@@ -30,7 +30,7 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
 
   // Validation state
   const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
-  
+
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -123,10 +123,10 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
     e.preventDefault();
 
     if (!validateForm()) return;
-    
+
     // Prevent double submission
     if (isSubmitting) return;
-    
+
     setIsSubmitting(true);
 
     // Convert dates to ISO strings
@@ -142,7 +142,7 @@ export function SubscriptionForm({ subscriptionId, onSave, onCancel }: Subscript
         // Update existing subscription
         const success = updateSubscription(subscriptionId, formattedData);
         id = subscriptionId;
-        
+
         if (success) {
           console.log('Successfully updated subscription:', id);
         } else {

@@ -11,12 +11,16 @@ import { useState, useEffect } from 'react';
  */
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  
+
   // Force a manual check of online status
   const checkOnlineStatus = async (): Promise<boolean> => {
     // Try to fetch a small resource from the backend
     try {
-      const response = await fetch('/api/health', { 
+      // Use the API URL from environment variables
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      // Remove trailing slash if present to be consistent with other API calls
+      const baseUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+      const response = await fetch(`${baseUrl}/health`, {
         method: 'HEAD',
         cache: 'no-store',
         headers: {

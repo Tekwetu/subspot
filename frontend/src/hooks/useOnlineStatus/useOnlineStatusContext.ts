@@ -6,10 +6,10 @@ import { OnlineStatusContext } from './OnlineStatusContextDef';
  */
 export function useOnlineStatusContext() {
   const context = useContext(OnlineStatusContext);
-  
+
   if (context === undefined) {
     throw new Error('useOnlineStatusContext must be used within an OnlineStatusProvider');
   }
-  
+
   return context;
 }

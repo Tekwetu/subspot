@@ -13,8 +13,6 @@ export function OnlineStatusProvider({ children }: OnlineStatusProviderProps) {
   const onlineStatus = useOnlineStatus();
 
   return (
-    <OnlineStatusContext.Provider value={onlineStatus}>
-      {children}
-    </OnlineStatusContext.Provider>
+    <OnlineStatusContext.Provider value={onlineStatus}>{children}</OnlineStatusContext.Provider>
   );
 }
