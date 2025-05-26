@@ -33,12 +33,12 @@ export class ApiClient {
   constructor(apiBaseUrl?: string) {
     // Use environment variable from .env file, fallback to default if not set
     let baseUrl = apiBaseUrl || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    
+
     // Remove trailing slash if present for consistency
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
-    
+
     this.apiBaseUrl = baseUrl;
 
     // Try to get token from localStorage (if we're in a browser environment)

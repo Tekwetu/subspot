@@ -50,7 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (apiUrl.endsWith('/')) {
         apiUrl = apiUrl.slice(0, -1);
       }
-      
+
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
