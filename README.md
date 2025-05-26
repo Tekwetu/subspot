@@ -10,6 +10,7 @@ A simple web application for tracking personal subscriptions (primarily AI tools
 - Get a basic overview of subscription spending
 - Access key subscription details (cost, renewal date, cancellation info)
 - Synchronize offline changes with the backend when connectivity is restored
+- Mobile-responsive design with touch-friendly interface
 
 ## Technology Stack
 
@@ -18,13 +19,18 @@ A simple web application for tracking personal subscriptions (primarily AI tools
 - **Build Tool**: Vite
 - **Styling**: TailwindCSS
 - **State Management**: TinyBase (for in-memory data, reactivity, and local persistence)
+- **Mobile UI**: Responsive, card-based mobile interface with touch-optimized components
 
-### Backend (Coming Soon)
+### Backend
 - **Framework**: NestJS with TypeScript
 - **Database**: Turso (libSQL)
-- **Hosting**: Fly.io
+- **Authentication**: JWT-based authentication
+- **Hosting**: Fly.io containerized deployment
+- **Synchronization**: REST API with timestamp-based conflict resolution
 
 ## Development Setup
+
+### Frontend
 
 1. Clone the repository:
 ```bash
@@ -32,15 +38,34 @@ git clone https://github.com/tekwetu/subscription-manager.git
 cd subscription-manager
 ```
 
-2. Install dependencies:
+2. Install frontend dependencies:
 ```bash
 cd frontend
 npm install
 ```
 
-3. Start the development server:
+3. Start the frontend development server:
 ```bash
 npm run dev
+```
+
+### Backend
+
+1. Install backend dependencies:
+```bash
+cd backend
+npm install
+```
+
+2. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env file with your Turso credentials and JWT secret
+```
+
+3. Start the backend development server:
+```bash
+npm run start:dev
 ```
 
 ## Local-First Approach
@@ -49,6 +74,32 @@ This application is built with offline-first in mind:
 - All CRUD operations work offline using TinyBase
 - Data is synchronized with backend when online
 - Clear UI indicators show synchronization status
+- Conflict resolution strategy based on timestamps
+
+## Mobile Experience
+
+The application features a responsive, mobile-first design:
+- Card-based subscription view on mobile devices
+- Touch-friendly buttons and interaction elements
+- Sticky header with collapsible statistics
+- Bottom-sheet modals optimized for thumb navigation
+- Visual indicators for upcoming renewals
+
+## Deployment
+
+The application can be deployed using Docker and Fly.io:
+
+```bash
+# From the backend directory
+fly deploy
+```
+
+Frontend can be built for production:
+
+```bash
+# From the frontend directory
+npm run build
+```
 
 ## License
 
@@ -57,3 +108,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Roadmap
 
 See the [Implementation Plan](docs/implementation-plan.md) for details on upcoming features and development timeline.
+
+## Progress
+
+- ✅ Frontend local-first implementation (80% complete)
+- ✅ Backend API and synchronization (95% complete)
+- ✅ Mobile-responsive UI with touch-friendly interface
+- ✅ Data synchronization with conflict resolution
+- ⏳ Search, sorting, and filtering functionality
+- ⏳ Spending visualization
+- ⏳ Client-side reminder generation
+- ⏳ Email notification service
