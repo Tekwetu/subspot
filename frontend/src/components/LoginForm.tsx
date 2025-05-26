@@ -3,8 +3,8 @@ import { useAuth } from '../services/auth/useAuth';
 
 export function LoginForm() {
   const { login, isAuthenticated } = useAuth();
-  const [email, setEmail] = useState('admin@example.com'); // Default from backend/.env
-  const [password, setPassword] = useState('password123'); // Default from backend/.env
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,10 +87,7 @@ export function LoginForm() {
           </button>
         </div>
 
-        <div className="text-sm text-center text-gray-500">
-          <p>For testing, use the credentials from backend/.env</p>
-          <p>Default: admin@example.com / password123</p>
-        </div>
+
       </form>
     </div>
   );
