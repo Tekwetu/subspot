@@ -30,13 +30,11 @@ A simple web application for tracking personal subscriptions (primarily AI tools
 
 ## Development Setup
 
+First, clone this repository.
+
 ### Frontend
 
-1. Clone the repository:
-```bash
-git clone https://github.com/tekwetu/subscription-manager.git
-cd subscription-manager
-```
+1. Go to the project root directory.
 
 2. Install frontend dependencies:
 ```bash
@@ -51,19 +49,21 @@ npm run dev
 
 ### Backend
 
-1. Install backend dependencies:
+1. Go to the project root directory.
+
+2. Install backend dependencies:
 ```bash
 cd backend
 npm install
 ```
 
-2. Set up environment variables:
+3. Set up environment variables:
 ```bash
 cp .env.example .env
 # Edit .env file with your Turso credentials and JWT secret
 ```
 
-3. Start the backend development server:
+4. Start the backend development server:
 ```bash
 npm run start:dev
 ```
@@ -108,14 +108,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Roadmap
 
 See the [Implementation Plan](docs/implementation-plan.md) for details on upcoming features and development timeline.
-
-## Progress
-
-- ✅ Frontend local-first implementation (80% complete)
-- ✅ Backend API and synchronization (95% complete)
-- ✅ Mobile-responsive UI with touch-friendly interface
-- ✅ Data synchronization with conflict resolution
-- ⏳ Search, sorting, and filtering functionality
-- ⏳ Spending visualization
-- ⏳ Client-side reminder generation
-- ⏳ Email notification service
