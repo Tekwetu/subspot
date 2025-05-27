@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/Tekwetu/subscriptions/discussions
+    about: Please ask and answer questions here.
+  - name: Documentation
+    url: https://github.com/Tekwetu/subscriptions/blob/main/README.md
+    about: Check our documentation for usage information.
+  - name: Code of Conduct
+    url: https://github.com/Tekwetu/subspot#coc-ov-file
+    about: Please review our Code of Conduct before creating an issue.
